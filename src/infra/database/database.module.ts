@@ -9,6 +9,9 @@ import { EventsRepository } from "src/domain/event/application/repositories/even
 import { VenuesRepository } from "src/domain/event/application/repositories/venues-repository";
 import { MongoEventsRepository } from "./mongo/repositories/mongo-events-repository";
 import { MongoVenuesRepository } from "./mongo/repositories/mongo-venues-repository";
+import { LectureSchema } from "mongo/schema/lecture";
+import { MongoLecturesRepository } from "./mongo/repositories/mongo-lectures-repository";
+import { LecturesRepository } from "src/domain/event/application/repositories/lectures-repository";
 
 @Module({
   imports: [MongooseModule.forFeature([{
@@ -20,6 +23,9 @@ import { MongoVenuesRepository } from "./mongo/repositories/mongo-venues-reposit
   }, {
     name: 'Venue',
     schema: VenueSchema,
+  }, {
+    name: 'Lecture',
+    schema: LectureSchema,
   }])],
   providers: [{
     provide: UsersRepository,
@@ -30,11 +36,15 @@ import { MongoVenuesRepository } from "./mongo/repositories/mongo-venues-reposit
   }, {
     provide: VenuesRepository,
     useClass: MongoVenuesRepository,
+  }, {
+    provide: LecturesRepository,
+    useClass: MongoLecturesRepository,
   }],
   exports: [
     UsersRepository,
     EventsRepository,
     VenuesRepository,
+    LecturesRepository,
   ],
 })
 export class DatabaseModule {}

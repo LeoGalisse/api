@@ -25,9 +25,6 @@ export class CreateVenueController {
     const token = request.headers['authorization'].split(' ')[1]
     const decoded: UserPayload = this.jwtUseCase.decode(token)
 
-    console.log(decoded)
-    console.log(body)
-
     const result = await this.createUseCase.execute({
       name,
       address,

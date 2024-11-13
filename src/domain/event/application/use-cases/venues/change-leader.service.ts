@@ -38,8 +38,6 @@ export class ChangeLeaderUseCase {
       return left(new VenueNotFoundError())
     }
 
-    console.log(doesVenueExists)
-
     doesVenueExists.staffLeaders = [doesUserExists._id]
 
     const venue = await this.venuesRepository.update(doesVenueExists)
