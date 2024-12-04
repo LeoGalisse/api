@@ -2,6 +2,7 @@ import { BadRequestException, Body, Controller, Post, UsePipes } from "@nestjs/c
 import { CreateEventUseCase } from "src/domain/event/application/use-cases/events/create.service";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../pipes/zod-validation.pipe";
+import { Public } from "src/infra/auth/public";
 
 const createBodySchema = z.object({
   name: z.string(),
@@ -21,6 +22,7 @@ export class CreateEventController {
   constructor(private createUseCase: CreateEventUseCase) {}
 
   @Post()
+  @Public()
   @UsePipes(new ZodValidationPipe(createBodySchema))
   async handle(@Body() body: CreateBodySchema) {
     const { name, description, location, capacity, registrationStartDate, registrationEndDate, startDate, endDate } = body
