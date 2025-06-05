@@ -1,73 +1,261 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Inatel Event Management API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A comprehensive REST API for managing events, built with NestJS, MongoDB, and Clean Architecture principles. This system allows users to create and manage events, venues, lectures, and user roles for academic or corporate event management.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+- **Event Management**: Create and list events with registration periods
+- **User Management**: User registration, authentication, and role-based access control
+- **Venue Management**: Create venues and assign staff leaders
+- **Lecture Management**: Schedule lectures within venues
+- **Authentication**: JWT-based authentication and authorization
+- **Role-based Access**: Support for multiple user roles (admin, organizer, staff_leader, staff, speaker, participant)
+- **Data Validation**: Robust input validation using Zod schemas
+- **Testing**: Comprehensive unit and e2e testing setup
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🏗️ Architecture
 
-## Installation
+This project follows **Clean Architecture** principles with the following structure:
 
-```bash
-$ pnpm install
+```
+src/
+├── core/                    # Core utilities and base classes
+├── domain/                  # Business logic and use cases
+│   └── event/
+│       └── application/
+│           ├── use-cases/   # Business use cases
+│           ├── repositories/ # Repository interfaces
+│           └── cryptography/ # Cryptography interfaces
+└── infra/                   # Infrastructure layer
+    ├── auth/                # Authentication guards and strategies
+    ├── cryptography/        # Cryptography implementations
+    ├── database/            # Database configurations and repositories
+    ├── env/                 # Environment configuration
+    └── http/                # HTTP controllers and modules
 ```
 
-## Running the app
+## 🛠️ Tech Stack
+
+- **Framework**: NestJS
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT with Passport
+- **Validation**: Zod
+- **Testing**: Jest + Vitest + Supertest
+- **Environment**: Docker & Docker Compose
+- **Language**: TypeScript
+
+## 📋 Prerequisites
+
+- Node.js 18+ 
+- Docker and Docker Compose
+- MongoDB (via Docker or local installation)
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+git clone <repository-url>
+cd api
 ```
 
-## Test
+### 2. Install dependencies
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+npm install
 ```
 
-## Support
+### 3. Environment Setup
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Create a `.env` file in the root directory:
 
-## Stay in touch
+```env
+# Database
+DATABASE_URL=mongodb://admin:password123@localhost:27017/inatel_api?authSource=admin
+DATABASE_URL_TEST=mongodb://admin:password123@localhost:27018/inatel_api_test?authSource=admin
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Server
+PORT=3333
+CORS_ORIGIN=http://localhost:3000
 
-## License
+# JWT Keys (generate using the provided script)
+JWT_PUBLIC_KEY=your_public_key_here
+JWT_PRIVATE_KEY=your_private_key_here
+```
 
-Nest is [MIT licensed](LICENSE).
+### 4. Generate JWT Keys
+
+```bash
+node generate-jwt-keys.js
+```
+
+### 5. Start MongoDB with Docker
+
+```bash
+# Start only MongoDB
+npm run docker:up
+
+# Start MongoDB + Test DB
+npm run docker:up:test
+
+# Start MongoDB + Mongo Express (Admin UI)
+npm run docker:up:admin
+
+# Start all services
+npm run docker:up:all
+```
+
+### 6. Run the application
+
+```bash
+# Development mode
+npm run start:dev
+
+# Development with Docker
+npm run dev:with-docker
+
+# Production mode
+npm run start:prod
+```
+
+The API will be available at `http://localhost:3333`
+
+## 📚 API Endpoints
+
+### Events
+- `POST /event` - Create a new event (public)
+- `GET /events` - List all events
+
+### Users
+- `POST /register` - Register a new user (public)
+- `POST /sessions` - Authenticate user (public)
+- `GET /users/:role?` - List users by role (optional)
+- `PUT /users` - Update user information
+- `PUT /users/role` - Change user role
+
+### Venues
+- `POST /venue` - Create a new venue
+- `GET /venues` - List all venues
+- `PUT /venue/leader` - Change venue staff leader
+
+### Lectures
+- `POST /lecture` - Create a new lecture
+- `GET /lectures` - List all lectures
+
+## 🎭 User Roles
+
+The system supports the following user roles:
+
+- **admin**: Full system access
+- **organizer**: Event organization capabilities
+- **staff_leader**: Venue management and staff coordination
+- **staff**: Basic staff operations
+- **speaker**: Can create and manage lectures
+- **participant**: Basic user with event participation rights
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+npm run test:unit
+npm run test:unit:watch
+npm run test:unit:coverage
+npm run test:unit:ui
+```
+
+### E2E Tests
+```bash
+npm run test:e2e
+
+# Run E2E tests with Docker
+npm run test:with-docker
+```
+
+### All Tests
+```bash
+npm run test
+npm run test:watch
+npm run test:cov
+```
+
+## 🐳 Docker Commands
+
+```bash
+# Start services
+npm run docker:up              # MongoDB only
+npm run docker:up:test         # MongoDB + Test DB
+npm run docker:up:admin        # MongoDB + Mongo Express
+npm run docker:up:all          # All services
+
+# Stop services
+npm run docker:down            # Stop containers
+npm run docker:down:volumes    # Stop and remove volumes
+
+# Logs
+npm run docker:logs            # MongoDB logs
+npm run docker:logs:test       # Test DB logs
+
+# Restart
+npm run docker:restart         # Restart MongoDB
+npm run docker:restart:test    # Restart Test DB
+```
+
+## 🗄️ Database Schema
+
+### Main Entities
+
+- **Event**: Core event information with registration and event periods
+- **User**: User accounts with role-based permissions
+- **Venue**: Physical locations for lectures with staff assignments
+- **Lecture**: Scheduled presentations within venues
+- **Check-in**: Attendance tracking
+- **Participation**: Event participation records
+- **Speaker**: Speaker information and assignments
+- **Staff**: Staff assignments and responsibilities
+
+## 🔒 Authentication
+
+The API uses JWT tokens for authentication. Protected endpoints require a valid token in the Authorization header:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+Some endpoints are public (marked with `@Public()` decorator):
+- `POST /event` - Event creation
+- `POST /register` - User registration  
+- `POST /sessions` - User authentication
+
+## 🛠️ Development
+
+### Code Style
+```bash
+npm run format    # Format code with Prettier
+npm run lint      # Lint code with ESLint
+```
+
+### Project Structure
+- Follow Clean Architecture principles
+- Use dependency injection
+- Implement repository pattern
+- Apply SOLID principles
+- Use Either monad for error handling
+
+### Adding New Features
+1. Create domain entities in `mongo/schema/`
+2. Define repository interfaces in `domain/event/application/repositories/`
+3. Implement use cases in `domain/event/application/use-cases/`
+4. Create repository implementations in `infra/database/mongo/repositories/`
+5. Add HTTP controllers in `infra/http/controllers/`
+6. Write tests for all layers
+
+## 📝 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | MongoDB connection string | - |
+| `DATABASE_URL_TEST` | Test database connection string | - |
+| `PORT` | Server port | 3333 |
+| `CORS_ORIGIN` | CORS allowed origin | http://localhost:3000 |
+| `JWT_PUBLIC_KEY` | JWT public key for verification | - |
+| `JWT_PRIVATE_KEY` | JWT private key for signing | - |

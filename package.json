@@ -1,6 +1,7 @@
 {
   "name": "api",
   "version": "0.0.1",
+  "type": "module",
   "description": "",
   "author": "",
   "private": true,
@@ -17,7 +18,23 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:unit": "vitest",
+    "test:unit:watch": "vitest --watch",
+    "test:unit:ui": "vitest --ui",
+    "test:unit:coverage": "vitest --coverage",
+    "docker:up": "docker-compose up -d mongodb",
+    "docker:up:test": "docker-compose --profile test up -d mongodb mongodb-test",
+    "docker:up:admin": "docker-compose --profile admin up -d mongodb mongo-express",
+    "docker:up:all": "docker-compose --profile test --profile admin up -d",
+    "docker:down": "docker-compose down",
+    "docker:down:volumes": "docker-compose down -v",
+    "docker:logs": "docker-compose logs -f mongodb",
+    "docker:logs:test": "docker-compose logs -f mongodb-test",
+    "docker:restart": "docker-compose restart mongodb",
+    "docker:restart:test": "docker-compose restart mongodb-test",
+    "test:with-docker": "npm run docker:up:test && npm run test && npm run docker:down",
+    "dev:with-docker": "npm run docker:up && npm run start:dev"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.5",
@@ -39,6 +56,7 @@
     "@nestjs/cli": "^10.4.5",
     "@nestjs/schematics": "^10.2.2",
     "@nestjs/testing": "^10.4.5",
+    "@swc/core": "^1.11.29",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.13",
     "@types/node": "^22.7.7",
@@ -46,6 +64,8 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.10.0",
+    "@vitest/coverage-v8": "^3.2.1",
+    "@vitest/ui": "^3.2.1",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -57,7 +77,9 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "unplugin-swc": "^1.5.4",
+    "vitest": "^3.2.1"
   },
   "jest": {
     "moduleFileExtensions": [
