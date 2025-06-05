@@ -1,5 +1,5 @@
-import { Venue } from "mongo/schema/venue";
-import { Types } from "mongoose";
+import { Venue } from 'mongo/schema/venue';
+import { Types } from 'mongoose';
 
 export abstract class VenuesRepository {
   abstract findById(id: Types.ObjectId): Promise<Venue | null>;

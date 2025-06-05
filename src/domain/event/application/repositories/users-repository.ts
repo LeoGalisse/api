@@ -1,5 +1,5 @@
-import { User } from "mongo/schema/user";
-import { Types } from "mongoose";
+import { User } from 'mongo/schema/user';
+import { Types } from 'mongoose';
 
 export interface UpdateUser {
   email: string;

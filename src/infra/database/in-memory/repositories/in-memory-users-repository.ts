@@ -1,30 +1,37 @@
-import { User } from "mongo/schema/user";
-import { UpdateUser, UsersRepository } from "src/domain/event/application/repositories/users-repository";
-import { Types } from "mongoose";
+import { User } from 'mongo/schema/user';
+import {
+  UpdateUser,
+  UsersRepository,
+} from 'src/domain/event/application/repositories/users-repository';
+import { Types } from 'mongoose';
 
 export class InMemoryUsersRepository implements UsersRepository {
   private users: User[] = [];
 
   async findById(id: Types.ObjectId): Promise<User | null> {
-    const user = this.users.find(user => user._id?.toString() === id.toString());
+    const user = this.users.find(
+      (user) => user._id?.toString() === id.toString(),
+    );
     return user || null;
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    const user = this.users.find(user => user.username === username);
+    const user = this.users.find((user) => user.username === username);
     return user || null;
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = this.users.find(user => user.email === email);
+    const user = this.users.find((user) => user.email === email);
     return user || null;
   }
 
   async findByRole(role: string): Promise<User[]> {
-    return this.users.filter(user => user.role === role);
+    return this.users.filter((user) => user.role === role);
   }
   async changeRole(updateUser: UpdateUser): Promise<User> {
-    const userIndex = this.users.findIndex(user => user.email === updateUser.email);
+    const userIndex = this.users.findIndex(
+      (user) => user.email === updateUser.email,
+    );
     if (userIndex === -1) {
       throw new Error('User not found');
     }
@@ -32,7 +39,7 @@ export class InMemoryUsersRepository implements UsersRepository {
     const updatedUser = {
       ...this.users[userIndex],
       ...updateUser,
-      role: updateUser.role as User['role'] || this.users[userIndex].role,
+      role: (updateUser.role as User['role']) || this.users[userIndex].role,
     };
 
     this.users[userIndex] = updatedUser;
@@ -50,7 +57,9 @@ export class InMemoryUsersRepository implements UsersRepository {
   }
 
   async update(updateUser: UpdateUser): Promise<User> {
-    const userIndex = this.users.findIndex(user => user.email === updateUser.email);
+    const userIndex = this.users.findIndex(
+      (user) => user.email === updateUser.email,
+    );
     if (userIndex === -1) {
       throw new Error('User not found');
     }
@@ -58,7 +67,7 @@ export class InMemoryUsersRepository implements UsersRepository {
     const updatedUser = {
       ...this.users[userIndex],
       ...updateUser,
-      role: updateUser.role as User['role'] || this.users[userIndex].role,
+      role: (updateUser.role as User['role']) || this.users[userIndex].role,
     };
 
     this.users[userIndex] = updatedUser;
@@ -66,7 +75,7 @@ export class InMemoryUsersRepository implements UsersRepository {
   }
 
   delete(id: string): void {
-    const index = this.users.findIndex(user => user._id?.toString() === id);
+    const index = this.users.findIndex((user) => user._id?.toString() === id);
     if (index !== -1) {
       this.users.splice(index, 1);
     }
@@ -74,7 +83,7 @@ export class InMemoryUsersRepository implements UsersRepository {
 
   async list(role?: string): Promise<User[]> {
     if (role) {
-      return this.users.filter(user => user.role === role);
+      return this.users.filter((user) => user.role === role);
     }
     return [...this.users];
   }

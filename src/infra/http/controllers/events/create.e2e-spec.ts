@@ -28,13 +28,16 @@ describe('Create Event (e2e)', () => {
           useFactory: (envService: EnvService) => {
             const baseUri = envService.get('DATABASE_URL_TEST');
             const testDatabaseName = `test-${Date.now()}`;
-            const updatedUri = baseUri.replace(/\/([^/?]+)(\?|$)/, `/${testDatabaseName}$2`);
+            const updatedUri = baseUri.replace(
+              /\/([^/?]+)(\?|$)/,
+              `/${testDatabaseName}$2`,
+            );
 
             return {
               uri: updatedUri,
-            }
+            };
           },
-        })
+        }),
       ],
     }).compile();
 
@@ -48,7 +51,7 @@ describe('Create Event (e2e)', () => {
     for (const collection of collections) {
       await collection.deleteMany({});
     }
-  })
+  });
 
   afterAll(async () => await Promise.all([app.close(), connection.close()]));
 
@@ -62,12 +65,12 @@ describe('Create Event (e2e)', () => {
       registrationEndDate: '2022-01-02T00:00:00.000Z',
       startDate: '2022-01-03T00:00:00.000Z',
       endDate: '2022-01-04T00:00:00.000Z',
-    }
+    };
 
     const response = await request(app.getHttpServer())
       .post('/event')
       .send(body)
-      .expect(201)
+      .expect(201);
 
     expect(response.body.event).toMatchObject({
       name: body.name,
@@ -77,7 +80,7 @@ describe('Create Event (e2e)', () => {
       registrationStartDate: body.registrationStartDate,
       registrationEndDate: body.registrationEndDate,
       startDate: body.startDate,
-      endDate: body.endDate,  
+      endDate: body.endDate,
     });
 
     expect(response.body.event).toHaveProperty('_id');
@@ -95,18 +98,17 @@ describe('Create Event (e2e)', () => {
       registrationEndDate: '2022-01-02T00:00:00.000Z',
       startDate: '2022-01-03T00:00:00.000Z',
       endDate: '2022-01-04T00:00:00.000Z',
-    }
+    };
 
-    await request(app.getHttpServer())
-      .post('/event')
-      .send(body)
-      .expect(201)
+    await request(app.getHttpServer()).post('/event').send(body).expect(201);
 
     const response = await request(app.getHttpServer())
       .post('/event')
       .send(body)
-      .expect(400)
+      .expect(400);
 
-    expect(response.body.message).toBe('There is already an event with the name provided.');
-  })
+    expect(response.body.message).toBe(
+      'There is already an event with the name provided.',
+    );
+  });
 });

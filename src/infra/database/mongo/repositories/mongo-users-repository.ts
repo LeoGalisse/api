@@ -1,8 +1,11 @@
-import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { User } from "mongo/schema/user";
-import { Model, Types } from "mongoose";
-import { UpdateUser, UsersRepository } from "src/domain/event/application/repositories/users-repository";
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'mongo/schema/user';
+import { Model, Types } from 'mongoose';
+import {
+  UpdateUser,
+  UsersRepository,
+} from 'src/domain/event/application/repositories/users-repository';
 
 @Injectable()
 export class MongoUsersRepository implements UsersRepository {
@@ -25,7 +28,13 @@ export class MongoUsersRepository implements UsersRepository {
   }
 
   changeRole(user: UpdateUser): Promise<User> {
-    return this.userModel.findOneAndUpdate({ email: user.email }, { role: user.role }, { new: true }).exec();
+    return this.userModel
+      .findOneAndUpdate(
+        { email: user.email },
+        { role: user.role },
+        { new: true },
+      )
+      .exec();
   }
 
   create(user: User): Promise<User> {
@@ -36,7 +45,9 @@ export class MongoUsersRepository implements UsersRepository {
   }
 
   async update(user: UpdateUser): Promise<User> {
-    return this.userModel.findOneAndUpdate({ email: user.email }, user, { new: true }).exec();
+    return this.userModel
+      .findOneAndUpdate({ email: user.email }, user, { new: true })
+      .exec();
   }
 
   delete(id: string): void {
@@ -47,7 +58,7 @@ export class MongoUsersRepository implements UsersRepository {
     if (!role) {
       return this.userModel.find().exec();
     }
-    
+
     return this.userModel.find({ role: role }).exec();
   }
 }

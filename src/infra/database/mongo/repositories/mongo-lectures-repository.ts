@@ -1,12 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { Lecture } from "mongo/schema/lecture";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
-import { LecturesRepository } from "src/domain/event/application/repositories/lectures-repository";
+import { Injectable } from '@nestjs/common';
+import { Lecture } from 'mongo/schema/lecture';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { LecturesRepository } from 'src/domain/event/application/repositories/lectures-repository';
 
 @Injectable()
 export class MongoLecturesRepository implements LecturesRepository {
-  constructor(@InjectModel(Lecture.name) private lectureModel: Model<Lecture>) {}
+  constructor(
+    @InjectModel(Lecture.name) private lectureModel: Model<Lecture>,
+  ) {}
 
   async findById(id: string): Promise<Lecture | null> {
     return this.lectureModel.findById(id).exec();
@@ -24,7 +26,9 @@ export class MongoLecturesRepository implements LecturesRepository {
   }
 
   async update(lecture: Lecture): Promise<Lecture> {
-    return this.lectureModel.findByIdAndUpdate(lecture._id, lecture, { new: true }).exec();
+    return this.lectureModel
+      .findByIdAndUpdate(lecture._id, lecture, { new: true })
+      .exec();
   }
 
   async delete(id: string): Promise<void> {

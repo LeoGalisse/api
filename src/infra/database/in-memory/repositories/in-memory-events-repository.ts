@@ -1,17 +1,17 @@
-import { Event } from "mongo/schema/event";
-import { EventsRepository } from "src/domain/event/application/repositories/events-repository";
-import { Types } from "mongoose";
+import { Event } from 'mongo/schema/event';
+import { EventsRepository } from 'src/domain/event/application/repositories/events-repository';
+import { Types } from 'mongoose';
 
 export class InMemoryEventsRepository implements EventsRepository {
   private events: Event[] = [];
 
   async findById(id: string): Promise<Event | null> {
-    const event = this.events.find(event => event._id?.toString() === id);
+    const event = this.events.find((event) => event._id?.toString() === id);
     return event || null;
   }
 
   async findByName(name: string): Promise<Event | null> {
-    const event = this.events.find(event => event.name === name);
+    const event = this.events.find((event) => event.name === name);
     return event || null;
   }
 
@@ -25,7 +25,9 @@ export class InMemoryEventsRepository implements EventsRepository {
   }
 
   async update(event: Event): Promise<Event> {
-    const index = this.events.findIndex(e => e._id?.toString() === event._id?.toString());
+    const index = this.events.findIndex(
+      (e) => e._id?.toString() === event._id?.toString(),
+    );
     if (index === -1) {
       throw new Error('Event not found');
     }
@@ -34,7 +36,9 @@ export class InMemoryEventsRepository implements EventsRepository {
   }
 
   delete(id: string): void {
-    const index = this.events.findIndex(event => event._id?.toString() === id);
+    const index = this.events.findIndex(
+      (event) => event._id?.toString() === id,
+    );
     if (index !== -1) {
       this.events.splice(index, 1);
     }

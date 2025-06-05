@@ -1,5 +1,5 @@
-import { Controller, Get } from "@nestjs/common";
-import { ListEventsUseCase } from "src/domain/event/application/use-cases/events/list.service";
+import { Controller, Get } from '@nestjs/common';
+import { ListEventsUseCase } from 'src/domain/event/application/use-cases/events/list.service';
 
 @Controller('/events')
 export class ListEventsController {
@@ -7,12 +7,12 @@ export class ListEventsController {
 
   @Get()
   async handle() {
-    const result = await this.listUseCase.execute()
+    const result = await this.listUseCase.execute();
 
-    const { events } = result
+    const { events } = result;
 
     return {
       events,
-    }
+    };
   }
 }

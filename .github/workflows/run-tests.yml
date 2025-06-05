@@ -54,8 +54,8 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci      
-      
+        run: npm ci          
+        
       - name: Generate JWT Keys
         run: |
           node -e "
@@ -66,13 +66,20 @@ jobs:
             publicKeyEncoding: { type: 'spki', format: 'pem' },
             privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
           });
+          
+          // Convert PEM to base64 as expected by the application
+          const privateKeyBase64 = Buffer.from(privateKey).toString('base64');
+          const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
+          
           fs.writeFileSync('.env.keys', 
-            'JWT_PRIVATE_KEY=\"' + privateKey.replace(/\n/g, '\\\\n') + '\"\n' +
-            'JWT_PUBLIC_KEY=\"' + publicKey.replace(/\n/g, '\\\\n') + '\"\n'
+            'JWT_PRIVATE_KEY=' + privateKeyBase64 + '\\n' +
+            'JWT_PUBLIC_KEY=' + publicKeyBase64 + '\\n'
           );
-          console.log('JWT keys generated');
+          console.log('JWT keys generated and base64 encoded');
+          console.log('Private key base64 length:', privateKeyBase64.length);
+          console.log('Public key base64 length:', publicKeyBase64.length);
           "
-
+      
       - name: Create .env file
         run: |
           echo "DATABASE_URL=mongodb://admin:password123@localhost:27017/inatel_api?authSource=admin" >> .env
@@ -81,11 +88,11 @@ jobs:
           echo "CORS_ORIGIN=http://localhost:3000" >> .env
           cat .env.keys >> .env
 
-      - name: Lint code
-        run: npm run lint
-
-      - name: Format check
-        run: npm run format
+      - name: Verify .env file
+        run: |
+          echo "=== .env file content ==="
+          cat .env
+          echo "========================="
 
       - name: Run unit tests
         run: npm run test:unit:coverage

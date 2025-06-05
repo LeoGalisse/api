@@ -22,7 +22,7 @@ import { EnvService } from './infra/env/env.service';
       useFactory: (envService: EnvService) => ({
         uri: envService.get('DATABASE_URL'),
       }),
-    })
+    }),
   ],
 })
 export class AppModule {}

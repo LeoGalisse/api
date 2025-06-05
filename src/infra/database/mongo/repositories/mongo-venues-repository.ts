@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { Venue } from "mongo/schema/venue";
-import { VenuesRepository } from "src/domain/event/application/repositories/venues-repository";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { Injectable } from '@nestjs/common';
+import { Venue } from 'mongo/schema/venue';
+import { VenuesRepository } from 'src/domain/event/application/repositories/venues-repository';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class MongoVenuesRepository implements VenuesRepository {
@@ -24,7 +24,9 @@ export class MongoVenuesRepository implements VenuesRepository {
   }
 
   async update(venue: Venue): Promise<Venue> {
-    return this.venueModel.findByIdAndUpdate(venue._id, venue, { new: true }).exec();
+    return this.venueModel
+      .findByIdAndUpdate(venue._id, venue, { new: true })
+      .exec();
   }
 
   async delete(id: string): Promise<void> {

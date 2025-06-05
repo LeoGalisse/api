@@ -36,15 +36,18 @@ describe('Create Lecture (e2e)', () => {
           useFactory: (envService: EnvService) => {
             const baseUri = envService.get('DATABASE_URL_TEST');
             const testDatabaseName = `test-${Date.now()}`;
-            const updatedUri = baseUri.replace(/\/([^/?]+)(\?|$)/, `/${testDatabaseName}$2`);
+            const updatedUri = baseUri.replace(
+              /\/([^/?]+)(\?|$)/,
+              `/${testDatabaseName}$2`,
+            );
 
             console.log(updatedUri);
 
             return {
               uri: updatedUri,
-            }
+            };
           },
-        })
+        }),
       ],
     }).compile();
 
@@ -58,7 +61,7 @@ describe('Create Lecture (e2e)', () => {
     for (const collection of collections) {
       await collection.deleteMany({});
     }
-  })
+  });
 
   afterAll(async () => await Promise.all([app.close(), connection.close()]));
 
@@ -72,12 +75,12 @@ describe('Create Lecture (e2e)', () => {
       registrationEndDate: '2022-01-02T00:00:00.000Z',
       startDate: '2022-01-03T00:00:00.000Z',
       endDate: '2022-01-04T00:00:00.000Z',
-    }
+    };
 
     const createdEvent = await request(app.getHttpServer())
       .post('/event')
       .send(event)
-      .expect(201)
+      .expect(201);
 
     const user = {
       username: 'User',
@@ -85,29 +88,26 @@ describe('Create Lecture (e2e)', () => {
       password: 'password',
       event: createdEvent.body.event._id,
       role: 'admin',
-    }
+    };
 
-    await request(app.getHttpServer())
-      .post('/register')
-      .send(user)
-      .expect(201)
+    await request(app.getHttpServer()).post('/register').send(user).expect(201);
 
     const auth = await request(app.getHttpServer())
       .post('/sessions')
       .send({ email: user.email, password: user.password })
-      .expect(201)
+      .expect(201);
 
     const venue = {
       name: 'Venue',
       address: 'Venue Location',
       capacity: '100',
-    }
+    };
 
     const venueResponse = await request(app.getHttpServer())
       .post('/venue')
       .auth(auth.body.accessToken, { type: 'bearer' })
       .send(venue)
-      .expect(201)
+      .expect(201);
 
     const body = {
       name: 'Lecture',
@@ -116,13 +116,13 @@ describe('Create Lecture (e2e)', () => {
       capacity: '100',
       startDate: '2022-01-01T00:00:00.000Z',
       endDate: '2022-01-02T00:00:00.000Z',
-    }
+    };
 
     const response = await request(app.getHttpServer())
       .post('/lecture')
       .auth(auth.body.accessToken, { type: 'bearer' })
       .send(body)
-      .expect(201)
+      .expect(201);
 
     expect(response.body.lecture).toMatchObject({
       name: body.name,
@@ -130,7 +130,7 @@ describe('Create Lecture (e2e)', () => {
       venue: body.venue,
       capacity: Number(body.capacity),
       startDate: body.startDate,
-      endDate: body.endDate,  
+      endDate: body.endDate,
     });
 
     expect(response.body.lecture).toHaveProperty('_id');

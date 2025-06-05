@@ -1,8 +1,14 @@
-import { BadRequestException, Body, Controller, Post, UsePipes } from "@nestjs/common";
-import { CreateEventUseCase } from "src/domain/event/application/use-cases/events/create.service";
-import { z } from "zod";
-import { ZodValidationPipe } from "../../pipes/zod-validation.pipe";
-import { Public } from "src/infra/auth/public";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  UsePipes,
+} from '@nestjs/common';
+import { CreateEventUseCase } from 'src/domain/event/application/use-cases/events/create.service';
+import { z } from 'zod';
+import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
+import { Public } from 'src/infra/auth/public';
 
 const createBodySchema = z.object({
   name: z.string(),
@@ -13,9 +19,9 @@ const createBodySchema = z.object({
   registrationEndDate: z.string(),
   startDate: z.string(),
   endDate: z.string(),
-})
+});
 
-type CreateBodySchema = z.infer<typeof createBodySchema>
+type CreateBodySchema = z.infer<typeof createBodySchema>;
 
 @Controller('/event')
 export class CreateEventController {
@@ -25,7 +31,16 @@ export class CreateEventController {
   @Public()
   @UsePipes(new ZodValidationPipe(createBodySchema))
   async handle(@Body() body: CreateBodySchema) {
-    const { name, description, location, capacity, registrationStartDate, registrationEndDate, startDate, endDate } = body
+    const {
+      name,
+      description,
+      location,
+      capacity,
+      registrationStartDate,
+      registrationEndDate,
+      startDate,
+      endDate,
+    } = body;
 
     const result = await this.createUseCase.execute({
       name,
@@ -36,18 +51,18 @@ export class CreateEventController {
       registrationEndDate: new Date(registrationEndDate),
       startDate: new Date(startDate),
       endDate: new Date(endDate),
-    })
+    });
 
     if (result.isLeft()) {
-      const error = result.value
+      const error = result.value;
 
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
 
-    const { event } = result.value
+    const { event } = result.value;
 
     return {
       event,
-    }
+    };
   }
 }

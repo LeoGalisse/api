@@ -1,4 +1,4 @@
-import { Lecture } from "mongo/schema/lecture";
+import { Lecture } from 'mongo/schema/lecture';
 
 export abstract class LecturesRepository {
   abstract findById(id: string): Promise<Lecture | null>;

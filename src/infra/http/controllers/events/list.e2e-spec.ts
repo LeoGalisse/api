@@ -28,13 +28,16 @@ describe('List Events (e2e)', () => {
           useFactory: (envService: EnvService) => {
             const baseUri = envService.get('DATABASE_URL_TEST');
             const testDatabaseName = `test-${Date.now()}`;
-            const updatedUri = baseUri.replace(/\/([^/?]+)(\?|$)/, `/${testDatabaseName}$2`);
+            const updatedUri = baseUri.replace(
+              /\/([^/?]+)(\?|$)/,
+              `/${testDatabaseName}$2`,
+            );
 
             return {
               uri: updatedUri,
-            }
+            };
           },
-        })
+        }),
       ],
     }).compile();
 
@@ -48,7 +51,7 @@ describe('List Events (e2e)', () => {
     for (const collection of collections) {
       await collection.deleteMany({});
     }
-  })
+  });
 
   afterAll(async () => await Promise.all([app.close(), connection.close()]));
 
@@ -62,16 +65,13 @@ describe('List Events (e2e)', () => {
       registrationEndDate: '2022-01-02T00:00:00.000Z',
       startDate: '2022-01-03T00:00:00.000Z',
       endDate: '2022-01-04T00:00:00.000Z',
-    }
+    };
 
-    await request(app.getHttpServer())
-      .post('/event')
-      .send(body)
-      .expect(201)
+    await request(app.getHttpServer()).post('/event').send(body).expect(201);
 
     const response = await request(app.getHttpServer())
       .get('/events')
-      .expect(200)
+      .expect(200);
 
     expect(response.body.events).toHaveLength(1);
     expect(response.body.events[0]).toMatchObject({
@@ -83,6 +83,6 @@ describe('List Events (e2e)', () => {
       registrationEndDate: body.registrationEndDate,
       startDate: body.startDate,
       endDate: body.endDate,
-    })
+    });
   });
 });

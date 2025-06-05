@@ -1,4 +1,4 @@
-import { Event } from "mongo/schema/event";
+import { Event } from 'mongo/schema/event';
 
 export abstract class EventsRepository {
   abstract findById(id: string): Promise<Event | null>;
