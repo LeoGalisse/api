@@ -14,27 +14,89 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password123
+          MONGO_INITDB_DATABASE: inatel_api
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mongodb-test:
+        image: mongo:7.0
+        ports:
+          - 27018:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password123
+          MONGO_INITDB_DATABASE: inatel_api_test
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci      - name: Generate JWT Keys
+        run: |
+          node -e "
+          const crypto = require('crypto');
+          const fs = require('fs');
+          const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+            modulusLength: 2048,
+            publicKeyEncoding: { type: 'spki', format: 'pem' },
+            privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+          });
+          fs.writeFileSync('.env.keys', 
+            'JWT_PRIVATE_KEY=\"' + privateKey.replace(/\n/g, '\\\\n') + '\"\n' +
+            'JWT_PUBLIC_KEY=\"' + publicKey.replace(/\n/g, '\\\\n') + '\"\n'
+          );
+          console.log('JWT keys generated');
+          "
 
       - name: Create .env file
         run: |
-          touch ./.env
-          echo DATABASE_URL_TEST=${{ secrets.DATABASE_URL_TEST }} >> ./.env
-          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> ./.env
-          echo JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }} >> ./.env
-          echo JWT_PRIVATE_KEY=${{ secrets.JWT_PRIVATE_KEY }} >> ./.env
+          echo "DATABASE_URL=mongodb://admin:password123@localhost:27017/inatel_api?authSource=admin" >> .env
+          echo "DATABASE_URL_TEST=mongodb://admin:password123@localhost:27018/inatel_api_test?authSource=admin" >> .env
+          echo "PORT=3333" >> .env
+          echo "CORS_ORIGIN=http://localhost:3000" >> .env
+          cat .env.keys >> .env
 
-      - name: Install dependencies
-        working-directory: ./
-        run: npm install
+      - name: Lint code
+        run: npm run lint
 
-      - name: Run tests
-        working-directory: ./
+      - name: Format check
+        run: npm run format
+
+      - name: Run unit tests
+        run: npm run test:unit:coverage
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run e2e tests
         run: npm run test:e2e
+
+      - name: Upload coverage reports
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
