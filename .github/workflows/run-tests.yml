@@ -54,7 +54,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci      - name: Generate JWT Keys
+        run: npm ci      
+      
+      - name: Generate JWT Keys
         run: |
           node -e "
           const crypto = require('crypto');
