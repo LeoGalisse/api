@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CreateEventUseCase } from './create.service';
 import { EventAlreadyExistsError } from './errors/event-already-exists-error';
+import { EventInvalidDatesError } from './errors/event-invalid-dates-error';
 import { Event } from 'mongo/schema/event';
 import { Types } from 'mongoose';
 import { InMemoryEventsRepository } from '../../../../../infra/database/in-memory/repositories/in-memory-events-repository';
@@ -30,6 +31,7 @@ describe('CreateEventUseCase', () => {
   });
 
   describe('execute', () => {
+    //Positivos
     it('should create an event successfully when name does not exist', async () => {
       const eventData = createMockEvent();
 
@@ -48,27 +50,6 @@ describe('CreateEventUseCase', () => {
       const storedEvent = await eventsRepository.findByName(eventData.name);
       expect(storedEvent).toBeDefined();
       expect(storedEvent?.name).toBe(eventData.name);
-    });
-
-    it('should return EventAlreadyExistsError when event with same name exists', async () => {
-      const existingEventData = createMockEvent({ name: 'Existing Event' });
-      const duplicateEventData = createMockEvent({ name: 'Existing Event' });
-
-      await eventsRepository.create(existingEventData);
-
-      const result = await createEventUseCase.execute(duplicateEventData);
-
-      expect(result.isLeft()).toBe(true);
-
-      if (result.isLeft()) {
-        expect(result.value).toBeInstanceOf(EventAlreadyExistsError);
-        expect(result.value.message).toBe(
-          'There is already an event with the name provided.',
-        );
-      }
-
-      const allEvents = await eventsRepository.list();
-      expect(allEvents).toHaveLength(1);
     });
 
     it('should validate event data types correctly', async () => {
@@ -187,5 +168,78 @@ describe('CreateEventUseCase', () => {
         expect(createdEvent.venues).toEqual(eventData.venues);
       }
     });
+  
+    it('should accept capacity equal to 1 (minimum valid)', async () => {});
+
+    it('should create event with a venue defined', async () => {});
+
+    it('should accept registration dates with same start and end day', async () => {});
+
+    it('should create multiple events with unique names and ids', async () => {});
+    //Negativos
+
+    it('should not accept inconsistent dates', async () =>{
+      const eventData = createMockEvent({
+        name: 'inconsistent date',
+        registrationStartDate: new Date('2025-01-01'),
+        registrationEndDate: new Date('2024-01-31'),
+        startDate: new Date('2025-02-15'),
+        endDate: new Date('2024-02-17')
+      })
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.isLeft()).toBe(true);
+
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidDatesError);
+        expect(result.value.message).toBe(
+          'There is an inconsistency in the event dates.',
+        );
+      }
+
+      const allEvents = await eventsRepository.list();
+      expect(allEvents).toHaveLength(0);
+
+    });
+
+    it('should return EventAlreadyExistsError when event with same name exists', async () => {
+      const existingEventData = createMockEvent({ name: 'Existing Event' });
+      const duplicateEventData = createMockEvent({ name: 'Existing Event' });
+
+      await eventsRepository.create(existingEventData);
+
+      const result = await createEventUseCase.execute(duplicateEventData);
+
+      expect(result.isLeft()).toBe(true);
+
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventAlreadyExistsError);
+        expect(result.value.message).toBe(
+          'There is already an event with the name provided.',
+        );
+      }
+
+      const allEvents = await eventsRepository.list();
+      expect(allEvents).toHaveLength(1);
+    });
+
+    it('should not accept negative capacity', async () => {});
+
+    it('should not accept empty event name', async () => {});
+
+    it('should not accept missing name field', async () => {});
+
+    it('should not accept missing startDate field', async () => {});
+
+    it('should not accept registration start date after event start date', async () => {});
+
+    it('should not accept registration end date after event end date', async () => {});
+
+    it('should not accept capacity as a string (invalid type)', async () => {});
+
+    it('should not accept event with all fields undefined or null', async () => {});
+
+
   });
 });
