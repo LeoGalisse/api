@@ -474,6 +474,21 @@ describe('CreateEventUseCase', () => {
       }
     });
 
+    it('should not accept capacity equal to 0', async () => {
+      const eventData = createMockEvent({
+        name: 'Zero Capacity Event',
+        capacity: 0,
+      });
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidCapacity);
+        expect(result.value.message).toBe('Capacity has an invalid value.');
+      }
+    });
+
 
   });
 });
