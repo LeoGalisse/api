@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { CreateEventUseCase } from './create.service';
 import { EventAlreadyExistsError } from './errors/event-already-exists-error';
 import { EventInvalidDatesError } from './errors/event-invalid-dates-error';
+import { EventInvalidCapacity } from './errors/event-invalid-capacity';
+import { EventInvalidNameError } from './errors/event-invalid-name';
 import { Event } from 'mongo/schema/event';
 import { Types } from 'mongoose';
 import { InMemoryEventsRepository } from '../../../../../infra/database/in-memory/repositories/in-memory-events-repository';
@@ -169,13 +171,103 @@ describe('CreateEventUseCase', () => {
       }
     });
   
-    it('should accept capacity equal to 1 (minimum valid)', async () => {});
+    it('should accept capacity equal to 1 (minimum valid)', async () => {
+      const eventData = createMockEvent({
+      name: 'Minimum Capacity Event',
+      capacity: 1,
+    });
 
-    it('should create event with a venue defined', async () => {});
+    const result = await createEventUseCase.execute(eventData);
 
-    it('should accept registration dates with same start and end day', async () => {});
+    expect(result.isRight()).toBe(true);
 
-    it('should create multiple events with unique names and ids', async () => {});
+    if (result.isRight()) {
+      expect(result.value.event.capacity).toBe(1);
+      expect(result.value.event.name).toBe('Minimum Capacity Event');
+    }
+
+    const storedEvent = await eventsRepository.findByName('Minimum Capacity Event');
+    expect(storedEvent).toBeDefined();
+    expect(storedEvent?.capacity).toBe(1);
+    });
+
+    it('should create event with a venue defined', async () => {
+    const mockVenueId = new Types.ObjectId(); // criando um ID simulado de um local
+
+    const eventData = createMockEvent({
+      name: 'Event With Venue',
+      venues: [mockVenueId],
+    });
+
+    const result = await createEventUseCase.execute(eventData);
+
+    expect(result.isRight()).toBe(true);
+
+    if (result.isRight()) {
+      const createdEvent = result.value.event;
+      expect(createdEvent.name).toBe('Event With Venue');
+      expect(createdEvent.venues).toBeDefined();
+      expect(createdEvent.venues?.length).toBe(1);
+      expect(createdEvent.venues?.[0].toString()).toBe(mockVenueId.toString());
+    }
+
+    const storedEvent = await eventsRepository.findByName('Event With Venue');
+    expect(storedEvent).toBeDefined();
+    expect(storedEvent?.venues?.[0].toString()).toBe(mockVenueId.toString());
+  });
+
+
+    it('should accept registration dates with same start and end day', async () => {
+    const registrationDate = new Date('2025-01-10');
+
+    const eventData = createMockEvent({
+      name: 'One-Day Registration',
+      registrationStartDate: registrationDate,
+      registrationEndDate: registrationDate, // mesmo dia
+    });
+
+    const result = await createEventUseCase.execute(eventData);
+
+    expect(result.isRight()).toBe(true);
+
+    if (result.isRight()) {
+      const createdEvent = result.value.event;
+      expect(createdEvent.registrationStartDate.toISOString()).toBe(registrationDate.toISOString());
+      expect(createdEvent.registrationEndDate.toISOString()).toBe(registrationDate.toISOString());
+    }
+
+    const storedEvent = await eventsRepository.findByName('One-Day Registration');
+    expect(storedEvent).toBeDefined();
+    expect(storedEvent?.registrationStartDate.toISOString()).toBe(registrationDate.toISOString());
+    expect(storedEvent?.registrationEndDate.toISOString()).toBe(registrationDate.toISOString());
+  });
+
+
+    it('should create multiple events with unique names and ids', async () => {
+    const names = ['Evento A', 'Evento B', 'Evento C'];
+    const createdIds: string[] = [];
+
+    for (const name of names) {
+      const eventData = createMockEvent({ name });
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.isRight()).toBe(true);
+
+      if (result.isRight()) {
+        const eventId = result.value.event._id?.toString();
+        expect(eventId).toBeDefined();
+        expect(createdIds).not.toContain(eventId); // ID não repetido
+        createdIds.push(eventId);
+      }
+    }
+
+    const storedEvents = await eventsRepository.list();
+    expect(storedEvents.length).toBe(3);
+
+    const storedNames = storedEvents.map(e => e.name);
+    expect(storedNames).toEqual(expect.arrayContaining(names));
+  });
     //Negativos
 
     it('should not accept inconsistent dates', async () =>{
@@ -224,21 +316,163 @@ describe('CreateEventUseCase', () => {
       expect(allEvents).toHaveLength(1);
     });
 
-    it('should not accept negative capacity', async () => {});
+    it('should not accept negative capacity', async () => {
+      const eventData = createMockEvent({
+        name: 'Invalid Capacity Event',
+        capacity: -10,
+      });
 
-    it('should not accept empty event name', async () => {});
+      const result = await createEventUseCase.execute(eventData);
 
-    it('should not accept missing name field', async () => {});
+      expect(result.isLeft()).toBe(true);
 
-    it('should not accept missing startDate field', async () => {});
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidCapacity);
+        expect(result.value.message).toBe('Capacity has an invalid value.')
+      }
 
-    it('should not accept registration start date after event start date', async () => {});
+      const storedEvent = await eventsRepository.findByName('Invalid Capacity Event');
+      expect(storedEvent).toBe(null); // não foi salvo
+    });
 
-    it('should not accept registration end date after event end date', async () => {});
 
-    it('should not accept capacity as a string (invalid type)', async () => {});
+    it('should not accept empty event name', async () => {
+      const eventData = createMockEvent({
+        name: '   ', // só espaços em branco
+      });
 
-    it('should not accept event with all fields undefined or null', async () => {});
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.isLeft()).toBe(true);
+
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidNameError);
+        expect(result.value.message).toBe('Event name cannot be empty or missing.');
+      }
+
+      const storedEvent = await eventsRepository.findByName('   ');
+      expect(storedEvent).toBe(null);
+    });
+
+    it('should not accept missing name field', async () => {
+      const eventData = createMockEvent({} as any);
+      delete eventData.name; // garante que o campo não exista
+
+      const result = await createEventUseCase.execute(eventData);
+
+      if(result.isLeft()){
+        expect(result.value).toBeInstanceOf(EventInvalidNameError);
+        expect(result.value.message).toBe('Event name cannot be empty or missing.');
+      }
+    });
+
+    it('should not accept missing startDate field', async () => {
+      const eventData = createMockEvent({
+        name: 'missing startDate', // só espaços em branco
+      });
+      delete eventData.startDate; // garante que o campo não exista
+
+      const result = await createEventUseCase.execute(eventData);
+
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidDatesError);
+        expect(result.value.message).toBe(
+          'There is an inconsistency in the event dates.',
+        );
+      }
+
+      const allEvents = await eventsRepository.list();
+      expect(allEvents).toHaveLength(0);
+
+    });
+
+    it('should not accept registration start date after event start date', async () => {
+      const eventData = createMockEvent({
+        name: 'inconsistent date',
+        registrationStartDate: new Date('2025-01-01'),
+        startDate: new Date('2024-02-15')
+      })
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.isLeft()).toBe(true);
+
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidDatesError);
+        expect(result.value.message).toBe(
+          'There is an inconsistency in the event dates.',
+        );
+      }
+
+      const allEvents = await eventsRepository.list();
+      expect(allEvents).toHaveLength(0);
+    });
+
+    it('should not accept registration end date after event end date', async () => {
+      const eventData = createMockEvent({
+        name: 'inconsistent date',
+        registrationEndDate: new Date('2025-01-31'),
+        endDate: new Date('2024-02-17')
+      })
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.isLeft()).toBe(true);
+
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidDatesError);
+        expect(result.value.message).toBe(
+          'There is an inconsistency in the event dates.',
+        );
+      }
+
+      const allEvents = await eventsRepository.list();
+      expect(allEvents).toHaveLength(0);
+    });
+
+    it('should not accept capacity as a string (invalid type)', async () => {
+      const eventData = {
+        ...createMockEvent(),
+        capacity: "100", // tipo errado
+      } as any; // força compilação
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.isLeft()).toBe(true);
+
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(EventInvalidCapacity);
+        expect(result.value.message).toBe('Capacity has an invalid value.')
+      }
+
+      const storedEvent = await eventsRepository.findByName('Invalid Capacity Event');
+      expect(storedEvent).toBe(null); // não foi salvo
+    });
+
+    it('should not accept event with all fields undefined or null', async () => {
+      const invalidEvent = {
+        name: '',
+        description: null,
+        location: undefined,
+        capacity: null,
+        registrationStartDate: undefined,
+        registrationEndDate: null,
+        startDate: null,
+        endDate: undefined,
+        venues: null,
+      } as any; // força compilação
+
+      const result = await createEventUseCase.execute(invalidEvent);
+
+      expect(result.isLeft()).toBe(true);
+
+      if (result.isLeft()) {
+        // Como vários campos estão errados, você pode validar o erro mais genérico
+        expect(result.value).toBeInstanceOf(EventInvalidDatesError);
+        // ou validar que é algum tipo de erro, se não tiver um erro único ainda
+        expect(result.value).toBeInstanceOf(Error);
+      }
+    });
 
 
   });
