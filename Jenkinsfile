@@ -1,15 +1,9 @@
 pipeline {
-    agent {
-        docker {
-            image 'jenkins-node' // usa o container que você criou
-            args '-v $PWD:/app -w /app' // monta volume e define diretório
-        }
-    }
+    agent any
 
     stages {
         stage('Checkout') {
             steps {
-                // Clona o projeto a partir do repositório
                 checkout scm
             }
         }
@@ -29,7 +23,7 @@ pipeline {
 
     post {
         always {
-            junit '**/coverage/**/junit*.xml' // se você gerar reports JUnit
+            junit '**/coverage/**/junit*.xml'
         }
     }
 }
