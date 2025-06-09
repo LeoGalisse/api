@@ -19,7 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:unit": "vitest",
+    "test:unit": "vitest --reporter=junit --outputFile=coverage/junit-results.xml",
     "test:unit:watch": "vitest --watch",
     "test:unit:ui": "vitest --ui",
     "test:unit:coverage": "vitest --coverage",
