@@ -19,12 +19,6 @@ pipeline {
                 sh 'npm run test:unit'
             }
         }
-        stage('Debug JUnit XML') {
-            steps {
-                sh 'ls -la coverage'
-                sh 'cat coverage/junit-results.xml || echo "Arquivo não encontrado"'
-            }
-        }
     }
 
     post {
