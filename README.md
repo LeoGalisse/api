@@ -299,19 +299,58 @@ USER jenkins
 
 ## 🚀 Rodando Jenkins com Docker
 
-## 1. Construa a imagem personalizada do Jenkins:
+### 1. Construa e inicie o Jenkins:
 
 ```bash
-docker build -t jenkins-vitest -f Dockerfile.jenkins .
+# Opção 1: Usando docker-compose
+npm run docker:up:jenkins
+
+# Opção 2: Comando direto
+docker-compose --profile jenkins up -d --build
 ```
 
-## 2. Inicie o container Jenkins:
-```bash
-docker run -p 8080:8080 -p 50000:50000 --name jenkins-vitest -v jenkins_home:/var/jenkins_home jenkins-vitest
-```
-
-## 3. Acesse o Jenkins via: 
+### 2. Acesse o Jenkins:
 ```bash
 http://localhost:8080 
 ```
-e configure seu projeto pipeline.
+
+### 3. Configuração Inicial:
+- **Senha inicial**: 
+```bash
+docker exec inatel-api-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+- Selecione "Install suggested plugins"
+- Crie um usuário administrador
+
+### 4. Pipeline Automático:
+O projeto já inclui:
+- ✅ **Jenkinsfile** configurado
+- ✅ **Pipeline declarativo** com múltiplos estágios
+- ✅ **Relatórios de teste** automáticos
+- ✅ **Cobertura de código** integrada
+- ✅ **Artifacts de build** para deployment
+
+### 5. Comandos de Gerenciamento:
+```bash
+# Iniciar Jenkins
+npm run docker:up:jenkins
+
+# Parar Jenkins
+npm run docker:down:jenkins
+
+# Ver logs
+docker logs inatel-api-jenkins
+
+# Todos os serviços (MongoDB + Jenkins + Mongo Express)
+npm run docker:up:all
+```
+
+### 6. Funcionalidades do Pipeline:
+- **Checkout**: Obtém código fonte
+- **Lint & Build**: Verificação de qualidade
+- **Testes Unitários**: Com relatórios JUnit
+- **Testes E2E**: Executados em branches principais
+- **Security Audit**: Verificação de vulnerabilidades
+- **Artifacts**: Build pronto para deploy
+
+📋 **Guia completo**: Consulte `jenkins-setup.md` para instruções detalhadas de configuração.

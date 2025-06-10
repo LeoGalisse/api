@@ -25,6 +25,10 @@ export default defineConfig({
           statements: 80
         }
       }
+    },
+    reporters: ['default', 'junit'],
+    outputFile: {
+      junit: './coverage/junit-results.xml'
     }
   },
   plugins: [

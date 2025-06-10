@@ -17,5 +17,25 @@ RUN apt-get update && apt-get install -y \
 # Cria um usuário jenkins com permissão sudo
 RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
 
+# Configuração para evitar erro 431 (Request Header Fields Too Large)
+RUN mkdir -p /var/jenkins_home/init.groovy.d
+COPY <<EOF /var/jenkins_home/init.groovy.d/configureJetty.groovy
+import jenkins.model.Jenkins
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.ServerConnector
+
+def jenkins = Jenkins.getInstance()
+def server = jenkins.servletContext.getAttribute("org.eclipse.jetty.server.Server")
+
+if (server != null) {
+    server.getConnectors().each { connector ->
+        if (connector instanceof ServerConnector) {
+            connector.setRequestHeaderSize(32768)
+            connector.setResponseHeaderSize(32768)
+        }
+    }
+}
+EOF
+
 # Volta pro usuário padrão do Jenkins
 USER jenkins
