@@ -259,3 +259,59 @@ npm run lint      # Lint code with ESLint
 | `CORS_ORIGIN` | CORS allowed origin | http://localhost:3000 |
 | `JWT_PUBLIC_KEY` | JWT public key for verification | - |
 | `JWT_PRIVATE_KEY` | JWT private key for signing | - |
+
+# 🧪 Integração com Jenkins (CI/CD)
+
+Este projeto pode ser facilmente integrado ao Jenkins para automação dos testes unitários e validação contínua do código.
+
+## 🐳 Jenkins com Suporte a Node.js e Vitest
+
+O projeto já conta com um `Dockerfile` que prepara um ambiente Jenkins com suporte a:
+
+- Node.js 20.x
+- npm
+- Execução de testes com Vitest
+- Pipeline declarativa pronta para rodar testes unitários
+
+### 📦 Dockerfile para Jenkins
+
+```Dockerfile
+# Usa a imagem oficial do Jenkins com suporte a JDK 17
+FROM jenkins/jenkins:lts-jdk17
+
+USER root
+
+# Instalações básicas: curl, sudo, nodejs e npm
+RUN apt-get update && apt-get install -y \
+  curl \
+  sudo \
+  gnupg \
+  ca-certificates \
+  && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+  && apt-get install -y nodejs \
+  && apt-get clean
+
+# Cria um usuário jenkins com permissão sudo
+RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
+
+# Volta para o usuário padrão do Jenkins
+USER jenkins
+
+## 🚀 Rodando Jenkins com Docker
+
+## 1. Construa a imagem personalizada do Jenkins:
+
+```bash
+docker build -t jenkins-vitest -f Dockerfile.jenkins .
+```
+
+## 2. Inicie o container Jenkins:
+```bash
+docker run -p 8080:8080 -p 50000:50000 --name jenkins-vitest -v jenkins_home:/var/jenkins_home jenkins-vitest
+```
+
+## 3. Acesse o Jenkins via: 
+```bash
+http://localhost:8080 
+```
+e configure seu projeto pipeline.
