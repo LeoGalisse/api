@@ -33,6 +33,7 @@ export class CreateUserUseCase {
     const createdUser = await this.usersRepository.create({
       ...user,
       password: hashedPassword,
+      role: user.role || 'participant',
     });
 
     return right({

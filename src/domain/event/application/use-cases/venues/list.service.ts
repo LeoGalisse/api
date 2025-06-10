@@ -23,6 +23,10 @@ export class ListVenuesUseCase {
 
     const venuesWithStaff = await Promise.all(
       venues.map(async (venue) => {
+        if (!venue.staffLeaders || venue.staffLeaders.length === 0) {
+          return { ...venue, staffLeaders: [] };
+        }
+
         const staff = await Promise.all(
           venue.staffLeaders.map(async (staffLeaderId) => {
             return await this.usersRepository.findById(

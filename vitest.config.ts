@@ -6,6 +6,26 @@ export default defineConfig({
   test: {
     globals: true,
     root: './',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'coverage/**',
+        '**/*.spec.ts',
+        '**/*.test.ts',
+        '**/in-memory/**',
+      ],
+      thresholds: {
+        global: {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80
+        }
+      }
+    }
   },
   plugins: [
     swc.vite({
